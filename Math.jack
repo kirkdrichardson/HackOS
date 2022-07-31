@@ -11,10 +11,15 @@ class Math {
 
     /** Initializes the library. */
     function void init() {
+        return;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return ~(x) + 1;
+        }
+        return x;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +28,46 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int sum, shiftedX, i, bit;
+        var bool productIsNegative;
+
+        let productIsNegative = false;
+
+        if ((x < 0) & (y < 0)) {
+            let x = Math.abs(x);
+            let y = Math.abs(y);
+        } else {
+            if (x < 0) {
+                let x = Math.abs(x);
+                let productIsNegative = true;
+            }
+
+            if (y < 0) {
+                let y = Math.abs(y);
+                let productIsNegative = true;
+            }
+        }
+
+        let sum = 0;
+        let shiftedX = x;
+        let i = 0;
+        let bit = 1;
+
+        while (i < 16) {
+            // If ith bit of y == 1
+            if ((y & bit) = bit) {
+                let sum = sum + shiftedX;
+            }
+            let bit = bit + bit; // Shift our bit mask
+            let shiftedX = shiftedX + shiftedX;
+            let i = i + 1;
+        }
+
+        if (productIsNegative) {
+            let sum = (~sum) + 1;
+        }
+
+        return sum;
     }
 
     /** Returns the integer part of x/y.
