@@ -78,7 +78,7 @@ class Math {
     function int divide(int x, int y) {
         var int q, double;
         var bool quotientIsNegative;
-        
+
         let quotientIsNegative = false;
 
         if ((x < 0) & (y < 0)) {
@@ -132,7 +132,8 @@ class Math {
         while (bit > -1) {
             let newVal = val + bitVal;
 
-            if ((newVal * newVal) < (x + 1)) { // while newVal^^2 <= x
+            // 181^^2 is the max integer, so guard against overflow, otherwise if (newVal^^2 <= x):
+            if ((newVal < 182) & ~((newVal * newVal) > x)) { 
                 let val = newVal;
             }
             
