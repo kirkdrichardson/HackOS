@@ -9,26 +9,120 @@
  * consists of 32,768 words, each holding a 16-bit binary number.
  */ 
 class Memory {
+    // All available memory.
+    static Array ram;
+    // The heap is the segment of memory reserved for
+    // for objects and arrays. On the Hack platform, the heap
+    // begins at memory address 2048 and contains 14335 segments.
+    // 
+    // Conceptually, memory segments in the heap are represented
+    // as nodes of a linked list, such that the first item in a
+    // node is the length of the available memory in the segment,
+    // the second is the memory address of the next node and the
+    // remaining items are the memory blocks of the list itself.
+    //
+    // We call this conceptual linked list the freeList.
+    static Array freeList;
+
+    // Count of free segments avaialbe. Helpful for detecting out of memory errors
+    // or knowing when to run defrag.
+    static int freeSegments;
+
 
     /** Initializes the class. */
     function void init() {
+        // Since an Array compiles to just an address in memory,
+        // we can use this hack to access the full RAM w/ our bootstrap code.
+        let ram = 0;
+        // The beginning of the freeList begins at heap base address.
+        let freeList = 2048;
+        let freeList[0] = 14335; //  remaining memory addresses available
+        let freeList[1] = -1; // next node (none to start)
+
+        let freeSegments = 1;
+
+        return;
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        // Returns the value at memory address ram + address.
+        return ram[address];
+
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var int next, segmentSize, block, i, remaining;
+        var Array curr, prev;
+
+        let curr = freeList;
+        let prev = curr;
+        let segmentSize = curr[0];
+        let next = curr[1];
+        // How much memory will be remaining after we carve a piece out to
+        // satisfy the request? Must be greater than 0 to use it, since we need size + 2
+        // memory segments. Must be greater than 3 to keep the carved out node
+        //  in the list rather than splitting it out entirely.
+        let remaining = segmentSize - size - 1;
+        let i = 0;
+
+        // First-fit search finds first available memory block:
+        while ((remaining < 1) & (i < freeSegments)) {
+
+            if (remaining > 0) {
+                // We found a memory segment we can use.
+                // now we need to know if we should carve it and leave it in
+                // the list or cut it out of the list and return the whole block
+                if (remaining > 3) {
+                    // carve it out and leave segment in the list
+                    let block = curr + segmentSize - size;
+                    let block[-2] = size;
+                    let block[-1] = -1;
+                    let curr[0] = segmentSize - size - 2;
+
+                    return block;
+                } else {
+                    // Point the prev pointer to the one curr is pointing to
+                    let prev[1] = curr[1];
+
+                    // cut the segment out of the list
+                    let block = curr[2];
+                    let block[-2] = size;
+                    let block[-1] = -1;
+
+                    return block;
+                }
+            } else {
+                // Go to the next item in the list
+                let prev = curr;
+                let curr = next;
+                let segmentSize = curr[0];
+                let next = curr[1];
+                let i = i + 1;
+                let remaining = segmentSize - size - 1;
+            }
+        }
+
+            return block;
+
+
+        // todo - throw no segment found error
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
+        
+        let freeSegments = freeSegments + 1;
+        // todo - recycle memory
+        return;
     }    
 }
